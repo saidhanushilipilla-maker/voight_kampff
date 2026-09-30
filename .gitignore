@@ -1,0 +1,9 @@
+# Large ML files
+data/dataset.csv
+models/
+*.safetensors
+*.bin
+*.pt
+*.pth
+*.h5
+*.pkl
