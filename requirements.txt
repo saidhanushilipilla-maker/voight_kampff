@@ -1,3 +1,6 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch
+transformers
 pandas
 numpy
 scikit-learn
@@ -5,14 +8,10 @@ nltk
 spacy
 matplotlib
 seaborn
-torch
-transformers
-datasets
-accelerate
-evaluate
 streamlit
 python-dotenv
 langchain
 langchain-google-genai
 google-genai
 sqlite-utils
+reportlab

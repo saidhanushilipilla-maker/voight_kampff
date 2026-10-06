@@ -4,17 +4,31 @@ import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
 MODEL_NAME = "distilgpt2"
+
+if not torch.cuda.is_available():
+    torch.set_num_threads(1)
+
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 @lru_cache(maxsize=1)
 def load_perplexity_model():
     """
     Lazy singleton loader for perplexity evaluation model (distilgpt2).
+    Applies CPU dynamic quantization to stay well within 512MB RAM on Render.
     """
     tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
     model = AutoModelForCausalLM.from_pretrained(MODEL_NAME)
     model.to(device)
     model.eval()
+
+    if device.type == "cpu":
+        try:
+            model = torch.quantization.quantize_dynamic(
+                model, {torch.nn.Linear}, dtype=torch.qint8
+            )
+        except Exception as e:
+            print(f"Perplexity model quantization notice: {e}")
+
     return tokenizer, model
 
 def calculate_perplexity(text, max_length=256):

@@ -10,6 +10,10 @@ MODEL_PATH = "models/detector_model"
 FALLBACK_MODEL = "roberta-base"
 MAX_LENGTH = 128
 
+# Limit CPU threads to reduce memory footprint on Render free tier
+if not torch.cuda.is_available():
+    torch.set_num_threads(1)
+
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 @lru_cache(maxsize=1)
@@ -17,6 +21,7 @@ def load_detector_model():
     """
     Lazy singleton loader for RoBERTa detector model and tokenizer.
     Cached in memory to prevent slow disk reloads.
+    Applies CPU dynamic quantization to stay well within 512MB RAM limits on Render.
     """
     if os.path.exists(MODEL_PATH) and os.path.exists(os.path.join(MODEL_PATH, "config.json")):
         load_target = MODEL_PATH
@@ -29,6 +34,15 @@ def load_detector_model():
     model = AutoModelForSequenceClassification.from_pretrained(load_target, num_labels=2)
     model.to(device)
     model.eval()
+
+    # Dynamic quantization on CPU drastically reduces RAM usage (approx 60% memory savings)
+    if device.type == "cpu":
+        try:
+            model = torch.quantization.quantize_dynamic(
+                model, {torch.nn.Linear}, dtype=torch.qint8
+            )
+        except Exception as e:
+            print(f"Quantization notice: {e}")
 
     return tokenizer, model
 

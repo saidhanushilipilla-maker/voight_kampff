@@ -7,3 +7,11 @@ models/
 *.pth
 *.h5
 *.pkl
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+*.class
+venv/
+.env
+*.db
