@@ -12,7 +12,7 @@ load_dotenv(PROJECT_ROOT / ".env")
 from genai.prompts import DETECTION_EXPLANATION_PROMPT
 
 API_KEY = os.getenv("GOOGLE_API_KEY")
-MODEL_NAME = os.getenv("GEMINI_MODEL", "gemini-3.6-flash")
+MODEL_NAME = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
 
 def get_genai_chain():
     """

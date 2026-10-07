@@ -230,33 +230,37 @@ if analyze_btn:
         st.warning("⚠️ Please paste or type some text first.")
         st.stop()
         
-    with st.spinner("⚡ Running Voight-Kampff Multi-Signal Analysis..."):
-        # 1. Fast detection analysis
-        result = run_fast_analysis(user_text)
-        
-        if "error" in result:
-            st.error(result["error"])
-            st.stop()
+    try:
+        with st.spinner("⚡ Running Voight-Kampff Multi-Signal Analysis..."):
+            # 1. Fast detection analysis
+            result = run_fast_analysis(user_text)
             
-        st.session_state["text"] = user_text
-        st.session_state["result"] = result
-        
-    with st.spinner("✨ Synthesizing GenAI Detailed Report..."):
-        # 2. GenAI explanation
-        explanation = generate_explanation(user_text, result)
-        st.session_state["explanation"] = explanation
-        
-    # 3. Save to database history
-    burstiness_val = result.get("burstiness", {}).get("burstiness_score", 0.0)
-    save_detection(
-        input_text=user_text,
-        prediction=result["prediction"],
-        ai_probability=result["ai_probability"],
-        human_probability=result["human_probability"],
-        perplexity=result["perplexity"],
-        burstiness=burstiness_val,
-        genai_explanation=explanation
-    )
+            if "error" in result:
+                st.error(result["error"])
+                st.stop()
+                
+            st.session_state["text"] = user_text
+            st.session_state["result"] = result
+            
+        with st.spinner("✨ Synthesizing GenAI Detailed Report..."):
+            # 2. GenAI explanation
+            explanation = generate_explanation(user_text, result)
+            st.session_state["explanation"] = explanation
+            
+        # 3. Save to database history
+        burstiness_val = result.get("burstiness", {}).get("burstiness_score", 0.0)
+        save_detection(
+            input_text=user_text,
+            prediction=result["prediction"],
+            ai_probability=result["ai_probability"],
+            human_probability=result["human_probability"],
+            perplexity=result["perplexity"],
+            burstiness=burstiness_val,
+            genai_explanation=explanation
+        )
+    except Exception as e:
+        st.error(f"❌ An error occurred during analysis: {str(e)}")
+        st.info("💡 Tip: Try analyzing a shorter text snippet or check server memory resources.")
 
 # =========================================================
 # RESULTS DISPLAY AREA
